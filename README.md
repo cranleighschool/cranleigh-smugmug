@@ -2,7 +2,7 @@
 A wordpress plugin that connects with our Cranleigh SmugMug API
 
 ## Installation Instructions
-Because this plugin uses the phpSmug class from lildude you currently need to initialise that class using composer for this plugin to work. 
+Because this plugin uses the [phpSmug class](https://github.com/lildude/phpSmug) from [@lildude](https://github.com/lildude) you currently need to initialise that class using composer for this plugin to work. 
 
 ```sh
 $ cd phpSmug/phpSmug
