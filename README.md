@@ -1,5 +1,5 @@
-# cranleigh-smugmug
-A wordpress plugin that connects with our cranleigh smugmug api
+# Cranleigh Smugmug Plugin
+A wordpress plugin that connects with our Cranleigh SmugMug API
 
 ## Example Usage
 Use the shortcode `[smugmug_photos]` to invoke the plugin. 
