@@ -89,23 +89,23 @@ class Cranleigh_SmugMug_API {
 	 */
 	function output_display($image_obj) {
 		?>
-		<div style="max-width:260px;background:#0C223F;padding:1px 10px;color:#fff;margin:auto;" class="">
+		<div class="cs_smugmug_container">
 		<?php
 		if ($image_obj===false):
-			echo "<h3 style=\"margin:0px;\">Latest Photos</h3>";
+			echo "<h3 class=\"cs_smugmug_title\">Latest Photos</h3>";
 			
 		else:
 		?>
-			<h3 style="margin:0px;"><?php echo $image_obj->title; ?></h3>
+			<h3 class="cs_smugmug_title"><?php echo $image_obj->title; ?></h3>
 			<a href="<?php echo $image_obj->uri; ?>" target="_blank">
-				<img style="max-width:100%;" src="<?php echo $image_obj->image; ?>" />
+				<img class="img-responsive" src="<?php echo $image_obj->image; ?>" />
 			</a>
 			
 		<?php
 		endif;
 		?>
 		<p>View, download and purchase the best photos on our Smugmug.</p>
-			<a href="<?php echo $image_obj->uri; ?>" class="button">View and Purchase</a>
+		<a href="<?php echo $image_obj->uri; ?>" class="cs_smugmug_button">View and Purchase</a>
 		</div>
 		
 		<?php
