@@ -9,8 +9,15 @@ $ cd phpSmug/phpSmug
 $ composer update
 ```
 
-### I don't have Composer
+### But, I don't have Composer!
 Well you better have a read of https://getcomposer.org/
+
+## CSS Selectors
+This plugin doesn't come pre-styled, as it's meant to drop in to your own theme and you can customise the design of it. Below are some pointers...
+* The whole output is a div with the class `cs_smugmug_container`
+* The title is an `<h3>` with the class `cs_smugmug_title`
+* The image has the class `img-responsive` to fit in nicely with bootstrap
+* The "View and Purchase" `<a>` at the bottom has the class `cs_smugmug_button`
 
 ## Example Usage
 Use the shortcode `[smugmug_photos]` to invoke the plugin. 
