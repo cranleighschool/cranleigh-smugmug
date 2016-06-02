@@ -25,7 +25,9 @@ class Cranleigh_SmugMug_API {
 		$wordpress_settings = get_option('smugmug_settings', array('username'=>'dummy_username', 'api_key'=>'dummy_api_key'));
 		$this->username = $wordpress_settings['username'];
 		require_once(dirname(__FILE__).'/phpSmug/vendor/autoload.php');
+
 		$this->smug = new phpSmug\Client($wordpress_settings['api_key'], $this->options);
+		
 		add_shortcode("smugmug_photos", array($this, 'shortcode'));
 	}
 	
@@ -72,9 +74,12 @@ class Cranleigh_SmugMug_API {
 			$path = rtrim($ex[1], '/');
 		}
 		$path = '/'.ltrim($path, '/');
-
-		$api = $this->smug->get("user/{$this->username}!urlpathlookup?urlpath=".$path);
-
+		try {
+			$api = $this->smug->get("user/{$this->username}!urlpathlookup?urlpath=".$path);
+		} catch (Exception $e) {
+			echo 'Error: Incorrect Smugmug Credentials';
+			return false;
+		}
 		if ($api->Locator=="Folder,Album,Page") {
 			// If the locator is this, then the API will break, so lets quit now!
 			return $this->output_display(false);
