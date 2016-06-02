@@ -20,17 +20,17 @@ This plugin doesn't come pre-styled, as it's meant to drop in to your own theme 
 * The "View and Purchase" `<a>` at the bottom has the class `cs_smugmug_button`
 
 ## Example Usage
-Use the shortcode `[smugmug_photos]` to invoke the plugin. 
+Use the shortcode `[smugmug]` to invoke the plugin. 
 
 You must set the `path` parameter, which is either the full url on the link to the gallery/album or folder or if you want to cut down on the amount of text, just the filepath.
 
 Example:
 ```
-[smugmug_photos path="https://cranleigh.smugmug.com/2015-2016/Sport/Athletics/Atheletics-Bracknell-April-30/"]
+[smugmug path="https://cranleigh.smugmug.com/2015-2016/Sport/Athletics/Atheletics-Bracknell-April-30/"]
 ```
 OR
 ```
-[smugmug_photos path="/2015-2016/Sport/Athletics/Atheletics-Bracknell-April-30/"]
+[smugmug path="/2015-2016/Sport/Athletics/Atheletics-Bracknell-April-30/"]
 ```
 
 NB: Trailing or preceding slashes are taken care of, do what you want!

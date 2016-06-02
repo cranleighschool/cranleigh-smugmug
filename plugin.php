@@ -22,15 +22,25 @@ class Cranleigh_SmugMug_API {
 	 * @return void
 	 */
 	function __construct() {
-		$wordpress_settings = get_option('smugmug_settings', array('username'=>'dummy_username', 'api_key'=>'dummy_api_key'));
+		$wordpress_settings = get_option(
+			'smugmug_settings', 
+			array(
+				'username'=>'dummy_username', 
+				'api_key'=>'dummy_api_key'
+			)
+		);
+		
+		$this->api_key = $wordpress_settings['api_key'];
 		$this->username = $wordpress_settings['username'];
-		require_once(dirname(__FILE__).'/phpSmug/vendor/autoload.php');
-
-		$this->smug = new phpSmug\Client($wordpress_settings['api_key'], $this->options);
 		
 		add_shortcode("smugmug_photos", array($this, 'shortcode'));
+		add_shortcode("smugmug", array($this, 'shortcode'));
+		add_action("wp_enqueue_scripts", array($this,'load_dashicons_front_end' ));
 	}
 	
+	function load_dashicons_front_end() {
+		wp_enqueue_style( 'dashicons' );
+	}
 	
 	/**
 	 * shortcode function.
@@ -41,6 +51,10 @@ class Cranleigh_SmugMug_API {
 	 * @return void
 	 */
 	function shortcode($atts, $content=null) {
+		require_once(dirname(__FILE__).'/phpSmug/vendor/autoload.php');
+
+		$this->smug = new phpSmug\Client($this->api_key, $this->options);
+
 		$a = shortcode_atts(array(
 			"path" => null
 		), $atts);
@@ -119,27 +133,26 @@ class Cranleigh_SmugMug_API {
 	 * @return void
 	 */
 	function output_display($image_obj) {
-		?>
-		<div class="cs_smugmug_container">
-		<?php
+		$output = '<div class="cs_smugmug_container">';
+		
 		if ($image_obj===false):
-			echo "<h3 class=\"cs_smugmug_title\">Latest Photos</h3>";
+			$output .= "<h3 class=\"cs_smugmug_title\">Latest Photos</h3>";
 			
 		else:
-		?>
-			<h3 class="cs_smugmug_title"><?php echo $image_obj->title; ?></h3>
-			<a href="<?php echo $image_obj->uri; ?>" target="_blank">
-				<img class="img-responsive" src="<?php echo $image_obj->image; ?>" />
-			</a>
-			
-		<?php
-		endif;
-		?>
-		<p>View, download and purchase the best photos on our Smugmug.</p>
-		<a href="<?php echo $image_obj->uri; ?>" class="cs_smugmug_button">View and Purchase</a>
-		</div>
 		
-		<?php
+			$output .= '<h3 class="cs_smugmug_title">'.$image_obj->title.'</h3>';
+			$output .= '<a href="'.$image_obj->uri.'" target="_blank">';
+			$output .= '<img class="img-responsive" src="'.$image_obj->image.'" />';
+			$output .= '</a>';
+			
+		
+		endif;
+		
+		$output .= '<p>View, download and purchase the best photos on our Smugmug.</p>';
+		$output .= '<a target="_blank" href="'.$image_obj->uri.'" class="cs_smugmug_button">View and Purchase</a>';
+		$output .= '</div>';
+		
+		return $output;
 	}
 	
 	
