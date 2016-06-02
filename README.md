@@ -34,3 +34,7 @@ OR
 ```
 
 NB: Trailing or preceding slashes are taken care of, do what you want!
+
+## Author(s)
+* Fred Bradley [@cranleighschool](https://github.com/cranleighschool)
+* LilDude [@lildude](https://github.com/lildude) for phpSmug API
