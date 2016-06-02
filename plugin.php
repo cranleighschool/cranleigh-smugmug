@@ -13,14 +13,31 @@ class Cranleigh_SmugMug_API {
 
 	public $username = '';
 	public $options = array('AppName' => "Cranleigh School", '_verbosity'=>1);
+	
+	
+	/**
+	 * __construct function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
 	function __construct() {
-		$wordpress_settings = get_option('smugmug_settings', array('username'=>'cranleigh', 'api_key'=>'lKDuCaYbAGRdkTgnhbbLcgCK7EddinlQ'));
+		$wordpress_settings = get_option('smugmug_settings', array('username'=>'dummy_username', 'api_key'=>'dummy_api_key'));
 		$this->username = $wordpress_settings['username'];
 		require_once(dirname(__FILE__).'/phpSmug/vendor/autoload.php');
 		$this->smug = new phpSmug\Client($wordpress_settings['api_key'], $this->options);
 		add_shortcode("smugmug_photos", array($this, 'shortcode'));
 	}
 	
+	
+	/**
+	 * shortcode function.
+	 * 
+	 * @access public
+	 * @param mixed $atts
+	 * @param mixed $content (default: null)
+	 * @return void
+	 */
 	function shortcode($atts, $content=null) {
 		$a = shortcode_atts(array(
 			"path" => null
@@ -29,10 +46,19 @@ class Cranleigh_SmugMug_API {
 		return $this->get_highlight_image($a['path']);
 	}
 	
+	
+	/**
+	 * fixpath function.
+	 * 
+	 * @access public
+	 * @param mixed $p
+	 * @return void
+	 */
 	function fixpath($p) {
 		$p=str_replace('\\','/',trim($p));
 		return (substr($p,-1)!='/') ? $p.='/' : $p;
 	}
+	
 	/**
 	 * get_highlight_image function.
 	 * 
@@ -152,7 +178,7 @@ class Cranleigh_SmugMug_API {
 			}
 		}
 		return $api;
-//		http://www.smugmug.com/api/v2/user/cranleigh!urlpathlookup?urlpath=%2F2015-2016%2FSport%2FAthletics
+/*		http://www.smugmug.com/api/v2/user/cranleigh!urlpathlookup?urlpath=%2F2015-2016%2FSport%2FAthletics */
 	}
 }
 $smugapi = new Cranleigh_SmugMug_API();
