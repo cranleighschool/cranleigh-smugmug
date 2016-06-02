@@ -14,7 +14,7 @@ class Cranleigh_SmugMug_API {
 	public $username = '';
 	public $options = array('AppName' => "Cranleigh School", '_verbosity'=>1);
 	function __construct() {
-		$wordpress_settings = get_option('smugmug_settings');
+		$wordpress_settings = get_option('smugmug_settings', array('username'=>'cranleigh', 'api_key'=>'lKDuCaYbAGRdkTgnhbbLcgCK7EddinlQ'));
 		$this->username = $wordpress_settings['username'];
 		require_once(dirname(__FILE__).'/phpSmug/vendor/autoload.php');
 		$this->smug = new phpSmug\Client($wordpress_settings['api_key'], $this->options);
