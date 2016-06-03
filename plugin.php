@@ -4,7 +4,7 @@ Plugin Name: Cranleigh Smug Mug Integration
 Plugin URI: http://www.cranleigh.org
 Description: This plugin uses a php Smugmug class wrapper written by github.com/lildude.
 Author: Fred Bradley
-Version: 1.0
+Version: 2.0
 Author URI: http://fred.im/
 */
 require_once(dirname(__FILE__).'/settingsapiwrapper.php');
@@ -223,12 +223,12 @@ class Cranleigh_SmugMug_API {
 	function add_mce_popup() {
 		?>
 		<script>
-			function InsertShortcode(){
+			function SmugmugInsertShortcode(){
 				
 				var smugmug_url = jQuery("#smugmug_url").val();
 				smugmug_url = smugmug_url.trim();
 				if (smugmug_url.substr(0,4) != "http") {
-					alert(<?php echo json_encode( __( 'Please enter a valid URL, ensuring it starts with https://', 'gravityforms' ) ); ?>);
+					alert(<?php echo json_encode( __( 'Please enter a valid URL, ensuring it starts with https://', 'cranleigh' ) ); ?>);
 					return;
 				}
 				window.send_to_editor("[smugmug path=\"" + smugmug_url + "\"]");
@@ -240,10 +240,10 @@ class Cranleigh_SmugMug_API {
 		<div id="insert_smugmug" style="display:none;">
 			<div id="insert_smugmug_wrapper" class="wrap">
 				<div id="insert-smugmug-container">
-					<label>Enter the full SmugMug URL:</label><input type="text" id="smugmug_url" style="padding:10px;width:100%;border-radius: 5px; font-size:1.4em;" placeholder="The Smug Mug url" />
+					<label>Enter the full SmugMug URL:</label><input type="text" id="smugmug_url" style="padding:10px;width:100%;border-radius: 5px; font-size:1.4em;" placeholder="Smugmug URL" />
 					<br /><small>eg: https://cranleigh.smugmug.com/2015-2016/Sport/Hockey/Hockey-Common-Room-v-Upper/</small>
 					<div style="padding:15px;">
-						<input type="button" class="button-primary" value="Insert Shortcode" onclick="InsertShortcode();"/>
+						<input type="button" class="button-primary" value="Insert Shortcode" onclick="SmugmugInsertShortcode();"/>
 						<a class="button" href="#" onclick="tb_remove(); return false;"><?php _e("Cancel", "js_shortcode"); ?></a>
         			</div>
         			<br />
