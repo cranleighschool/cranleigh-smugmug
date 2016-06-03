@@ -37,6 +37,10 @@ class Cranleigh_SmugMug_API {
 		add_shortcode("smugmug_photos", array($this, 'shortcode'));
 		add_shortcode("smugmug", array($this, 'shortcode'));
 		add_action('wp_enqueue_scripts',array($this,'enqueue_styles'));
+		add_action('media_buttons', array($this, 'add_media_button'), 900);
+		add_action('wp_enqueue_media', array($this, 'include_media_button_js_file'));
+		add_action( 'admin_print_footer_scripts', array( $this, 'add_mce_popup' ) );
+
 	}
 	
 	function enqueue_styles() {
@@ -201,5 +205,57 @@ class Cranleigh_SmugMug_API {
 		return $api;
 /*		http://www.smugmug.com/api/v2/user/cranleigh!urlpathlookup?urlpath=%2F2015-2016%2FSport%2FAthletics */
 	}
+	
+	
+	function add_media_button() {
+		echo '<style>.wp-media-buttons .smugmug_insert span.wp-media-buttons-icon:before {
+			font:400 18px/1 dashicons;
+			content:"\f306";
+			} </style>';
+		echo '<a href="#" class="button smugmug_insert" id="add_smugmug_shortcode"><span class="wp-media-buttons-icon"></span>' . esc_html__( 'Smugmug', 'cranleigh' ) . '</a>';
+		
+	}
+	
+	function include_media_button_js_file() {
+		wp_enqueue_script('media_button', plugins_url('popme.js', __FILE__), array('jquery'), time(), true);
+	}
+
+	function add_mce_popup() {
+		?>
+		<script>
+			function InsertShortcode(){
+				
+				var smugmug_url = jQuery("#smugmug_url").val();
+				smugmug_url = smugmug_url.trim();
+				if (smugmug_url.substr(0,4) != "http") {
+					alert(<?php echo json_encode( __( 'Please enter a valid URL, ensuring it starts with https://', 'gravityforms' ) ); ?>);
+					return;
+				}
+				window.send_to_editor("[smugmug path=\"" + smugmug_url + "\"]");
+				return;
+        
+    }
+		</script>
+
+		<div id="insert_smugmug" style="display:none;">
+			<div id="insert_smugmug_wrapper" class="wrap">
+				<div id="insert-smugmug-container">
+					<label>Enter the full SmugMug URL:</label><input type="text" id="smugmug_url" style="padding:10px;width:100%;border-radius: 5px; font-size:1.4em;" placeholder="The Smug Mug url" />
+					<br /><small>eg: https://cranleigh.smugmug.com/2015-2016/Sport/Hockey/Hockey-Common-Room-v-Upper/</small>
+					<div style="padding:15px;">
+						<input type="button" class="button-primary" value="Insert Shortcode" onclick="InsertShortcode();"/>
+						<a class="button" href="#" onclick="tb_remove(); return false;"><?php _e("Cancel", "js_shortcode"); ?></a>
+        			</div>
+        			<br />
+        			<br />
+        			<strong>Reminder: please always check the output of the page to ensure that you have successfully added the Smugmug widget!</strong>
+
+				</div>
+			</div>
+		</div>
+
+	<?php
+	}	
+	
 }
 $smugapi = new Cranleigh_SmugMug_API();
