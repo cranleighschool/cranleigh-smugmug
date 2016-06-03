@@ -9,6 +9,7 @@ Author URI: http://fred.im/
 */
 require_once(dirname(__FILE__).'/settingsapiwrapper.php');
 require_once(dirname(__FILE__).'/settings.php');
+
 class Cranleigh_SmugMug_API {
 
 	public $username = '';
@@ -35,11 +36,11 @@ class Cranleigh_SmugMug_API {
 		
 		add_shortcode("smugmug_photos", array($this, 'shortcode'));
 		add_shortcode("smugmug", array($this, 'shortcode'));
-		add_action("wp_enqueue_scripts", array($this,'load_dashicons_front_end' ));
+		add_action('wp_enqueue_scripts',array($this,'enqueue_styles'));
 	}
 	
-	function load_dashicons_front_end() {
-		wp_enqueue_style( 'dashicons' );
+	function enqueue_styles() {
+		wp_register_style('font-awesome', plugins_url('font-awesome-4.6.3/css/font-awesome.min.css', __FILE__)); 
 	}
 	
 	/**
@@ -51,6 +52,9 @@ class Cranleigh_SmugMug_API {
 	 * @return void
 	 */
 	function shortcode($atts, $content=null) {
+		wp_enqueue_style('font-awesome');
+		wp_enqueue_style('dashicons');
+		
 		require_once(dirname(__FILE__).'/phpSmug/vendor/autoload.php');
 
 		$this->smug = new phpSmug\Client($this->api_key, $this->options);
@@ -147,9 +151,8 @@ class Cranleigh_SmugMug_API {
 			
 		
 		endif;
-		
-		$output .= '<p>View, download and purchase the best photos on our Smugmug.</p>';
-		$output .= '<a target="_blank" href="'.$image_obj->uri.'" class="cs_smugmug_button">View and Purchase</a>';
+		$output .= '<p>View, download or purchase the best photos on our Smugmug.</p>';
+		$output .= '<a target="_blank" href="'.$image_obj->uri.'" class="cs_smugmug_button">Visit Site <i class="fa fa-fw fa-external-link"></i></a>';
 		$output .= '</div>';
 		
 		return $output;
