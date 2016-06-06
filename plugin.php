@@ -142,6 +142,9 @@ class Cranleigh_SmugMug_API {
 	 * @return void
 	 */
 	function output_display($image_obj) {
+		if ($image_obj===false)
+			return false;
+
 		$output = '<div class="cs_smugmug_container">';
 		
 		if ($image_obj===false):
