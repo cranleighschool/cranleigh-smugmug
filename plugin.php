@@ -59,6 +59,8 @@ class Cranleigh_SmugMug_API {
 	function shortcode($atts, $content=null) {
 		wp_enqueue_style('font-awesome');
 		wp_enqueue_style('dashicons');
+		add_action('wp_footer', array($this, 'google_event_tracking'));
+
 		
 		require_once(dirname(__FILE__).'/phpSmug/vendor/autoload.php');
 
@@ -142,25 +144,29 @@ class Cranleigh_SmugMug_API {
 	 * @return void
 	 */
 	function output_display($image_obj) {
+		global $post;
 		if ($image_obj===false)
 			return false;
+
+//a target="_blank" class="tracked" data-action="Image Click" data-category="Calendar" data-label="https://parents.cranleigh.org/visit/calendar/" href="https://parents.cranleigh.org/visit/calendar/"
 
 		$output = '<div class="cs_smugmug_container">';
 		
 		if ($image_obj===false):
-			$output .= "<h3 class=\"cs_smugmug_title\">Latest Photos</h3>";
+			$widget_title = "Latest Photos";
+			$output .= "<h3 class=\"cs_smugmug_title\">".$widget_title."</h3>";
 			
 		else:
-		
-			$output .= '<h3 class="cs_smugmug_title">'.$image_obj->title.'</h3>';
-			$output .= '<a href="'.$image_obj->uri.'" target="_blank">';
+			$widget_title = $image_obj->title;
+			$output .= '<h3 class="cs_smugmug_title">'.$widget_title.'</h3>';
+			$output .= '<a href="'.$image_obj->uri.'" class="tracked" target="_blank" data-action="Smugmug" data-category="'.$post->post_name.'" data-label="'.$widget_title.'">';
 			$output .= '<img class="img-responsive" src="'.$image_obj->image.'" />';
 			$output .= '</a>';
 			
 		
 		endif;
 		$output .= '<p>View, download or purchase the best photos on our Smugmug.</p>';
-		$output .= '<a target="_blank" href="'.$image_obj->uri.'" class="cs_smugmug_button">Visit Site <i class="fa fa-fw fa-external-link"></i></a>';
+		$output .= '<a data-action="Smugmug" data-category="'.$post->post_name.'" data-label="'.$widget_title.'" target="_blank" href="'.$image_obj->uri.'" class="cs_smugmug_button tracked">Visit Site <i class="fa fa-fw fa-external-link"></i></a>';
 		$output .= '</div>';
 		
 		return $output;
@@ -259,6 +265,24 @@ class Cranleigh_SmugMug_API {
 		</div>
 
 	<?php
+	}
+	
+	function google_event_tracking() {
+		?>
+		<script type="text/javascript">
+			jQuery(document).ready(function() {
+	
+				jQuery('.cs_smugmug_container a.tracked').click(function() {
+					var action 		= jQuery(this).data("action");
+					var category 	= jQuery(this).data("category");
+					var label 		= jQuery(this).data("label");
+					ga('send', 'event',  action, category, label);
+				});
+	
+			});
+		</script>
+
+		<?php
 	}	
 	
 }

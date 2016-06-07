@@ -35,6 +35,22 @@ OR
 
 NB: Trailing or preceding slashes are taken care of, do what you want!
 
+## Google Analytics Tracking
+This plugin uses the Event Tracking code from Google Analytics. For this to work without showing errors, you need to ensure that you are using Google Analytics Universal style tracking code. 
+
+For example, it would look something like this: 
+```javascript
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-26454349-1', 'auto');
+  ga('send', 'pageview');
+```
+
+If you don't have this loaded, it will not track your clicks and might show some silent errors in your Javascript Console. 
+
 ## Author(s)
 * Fred Bradley [@cranleighschool](https://github.com/cranleighschool)
 * LilDude [@lildude](https://github.com/lildude) for phpSmug API
