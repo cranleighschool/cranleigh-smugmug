@@ -4,7 +4,7 @@ Plugin Name: Cranleigh Smug Mug Integration
 Plugin URI: http://www.cranleigh.org
 Description: This plugin uses a php Smugmug class wrapper written by github.com/lildude.
 Author: Fred Bradley
-Version: 2.0
+Version: 2.1
 Author URI: http://fred.im/
 */
 
@@ -15,42 +15,53 @@ class Cranleigh_SmugMug_API {
 
 	public $username = '';
 	public $options = array('AppName' => "Cranleigh School", '_verbosity'=>1);
-	
-	
+
+
 	/**
 	 * __construct function.
-	 * 
+	 *
 	 * @access public
 	 * @return void
 	 */
 	function __construct() {
 		$wordpress_settings = get_option(
-			'smugmug_settings', 
+			'smugmug_settings',
 			array(
-				'username'=>'dummy_username', 
+				'username'=>'dummy_username',
 				'api_key'=>'dummy_api_key'
 			)
 		);
-		
+
 		$this->api_key = $wordpress_settings['api_key'];
 		$this->username = $wordpress_settings['username'];
-		
-		add_shortcode("smugmug_photos", array($this, 'shortcode'));
-		add_shortcode("smugmug", array($this, 'shortcode'));
-		add_action('wp_enqueue_scripts',array($this,'enqueue_styles'));
-		add_action('media_buttons', array($this, 'add_media_button'), 900);
-		add_action('wp_enqueue_media', array($this, 'include_media_button_js_file'));
-		add_action( 'admin_print_footer_scripts', array( $this, 'add_mce_popup' ) );
+		if (empty($this->api_key) || empty($this->username)) {
+			add_action( 'admin_notices', array($this, 'geterror') );
+		} else {
+			add_shortcode("smugmug_photos", array($this, 'shortcode'));
+			add_shortcode("smugmug", array($this, 'shortcode'));
+			add_action('wp_enqueue_scripts',array($this,'enqueue_styles'));
+			add_action('media_buttons', array($this, 'add_media_button'), 900);
+			add_action('wp_enqueue_media', array($this, 'include_media_button_js_file'));
+			add_action( 'admin_print_footer_scripts', array( $this, 'add_mce_popup' ) );
+		}
 
 	}
-	
-	function enqueue_styles() {
-		wp_register_style('font-awesome', plugins_url('font-awesome-4.6.3/css/font-awesome.min.css', __FILE__)); 
+
+	function geterror() {
+		$class = 'notice notice-error';
+		$message = __( 'You need to configure the <a href="options-general.php?page=smugmug-config">Smugmug Plugin settings</a>.', 'sample-text-domain' );
+
+		printf( '<div class="%1$s"><p>%2$s</p></div>', $class, $message );
 	}
-	
+
+
+	function enqueue_styles() {
+		wp_register_style('font-awesome', plugins_url('font-awesome-4.6.3/css/font-awesome.min.css', __FILE__));
+	}
+
 	/**
 	 * shortcode function.
-	 * 
+	 *
 	 * @access public
 	 * @param mixed $atts
 	 * @param mixed $content (default: null)
@@ -61,7 +72,7 @@ class Cranleigh_SmugMug_API {
 		wp_enqueue_style('dashicons');
 		add_action('wp_footer', array($this, 'google_event_tracking'));
 
-		
+
 		require_once(dirname(__FILE__).'/phpSmug/vendor/autoload.php');
 
 		$this->smug = new phpSmug\Client($this->api_key, $this->options);
@@ -69,14 +80,14 @@ class Cranleigh_SmugMug_API {
 		$a = shortcode_atts(array(
 			"path" => null
 		), $atts);
-		
+
 		return $this->get_highlight_image($a['path']);
 	}
-	
-	
+
+
 	/**
 	 * fixpath function.
-	 * 
+	 *
 	 * @access public
 	 * @param mixed $p
 	 * @return void
@@ -85,10 +96,10 @@ class Cranleigh_SmugMug_API {
 		$p=str_replace('\\','/',trim($p));
 		return (substr($p,-1)!='/') ? $p.='/' : $p;
 	}
-	
+
 	/**
 	 * get_highlight_image function.
-	 * 
+	 *
 	 * @access public
 	 * @param string $path (default: "/2015-2016/Sport/Athletics/Atheletics-Bracknell-April-30")
 	 * @return void
@@ -123,7 +134,7 @@ class Cranleigh_SmugMug_API {
 				$thumb = $highlight_img->{$highlight_img->Locator}->ThumbnailUrl;
 				$hack = explode("/Th/", $thumb);
 				$image_url = $hack[0]."/M/".$hack[1];
-				
+
 				$return = new stdClass();
 				$return->title = $title;
 				$return->thumb = $thumb;
@@ -134,11 +145,11 @@ class Cranleigh_SmugMug_API {
 		endif;
 		return false;
 	}
-	
-	
+
+
 	/**
 	 * output_display function.
-	 * 
+	 *
 	 * @access public
 	 * @param mixed $image_obj
 	 * @return void
@@ -151,31 +162,31 @@ class Cranleigh_SmugMug_API {
 //a target="_blank" class="tracked" data-action="Image Click" data-category="Calendar" data-label="https://parents.cranleigh.org/visit/calendar/" href="https://parents.cranleigh.org/visit/calendar/"
 
 		$output = '<div class="cs_smugmug_container">';
-		
+
 		if ($image_obj===false):
 			$widget_title = "Latest Photos";
 			$output .= "<h3 class=\"cs_smugmug_title\">".$widget_title."</h3>";
-			
+
 		else:
 			$widget_title = $image_obj->title;
 			$output .= '<h3 class="cs_smugmug_title">'.$widget_title.'</h3>';
 			$output .= '<a href="'.$image_obj->uri.'" class="tracked" target="_blank" data-action="Smugmug" data-category="'.$post->post_name.'" data-label="'.$widget_title.'">';
 			$output .= '<img class="img-responsive" src="'.$image_obj->image.'" />';
 			$output .= '</a>';
-			
-		
+
+
 		endif;
 		$output .= '<p>View, download or purchase the best photos on our Smugmug.</p>';
 		$output .= '<a data-action="Smugmug" data-category="'.$post->post_name.'" data-label="'.$widget_title.'" target="_blank" href="'.$image_obj->uri.'" class="cs_smugmug_button tracked">Visit Site <i class="fa fa-fw fa-external-link"></i></a>';
 		$output .= '</div>';
-		
+
 		return $output;
 	}
-	
-	
+
+
 	/**
 	 * get_sport_galleries function.
-	 * 
+	 *
 	 * IN DEVELOPMENT
 	 *
 	 * @access public
@@ -215,17 +226,17 @@ class Cranleigh_SmugMug_API {
 		return $api;
 /*		http://www.smugmug.com/api/v2/user/cranleigh!urlpathlookup?urlpath=%2F2015-2016%2FSport%2FAthletics */
 	}
-	
-	
+
+
 	function add_media_button() {
 		echo '<style>.wp-media-buttons .smugmug_insert span.wp-media-buttons-icon:before {
 			font:400 18px/1 dashicons;
 			content:"\f306";
 			} </style>';
 		echo '<a href="#" class="button smugmug_insert" id="add_smugmug_shortcode"><span class="wp-media-buttons-icon"></span>' . esc_html__( 'Smugmug', 'cranleigh' ) . '</a>';
-		
+
 	}
-	
+
 	function include_media_button_js_file() {
 		wp_enqueue_script('media_button', plugins_url('popme.js', __FILE__), array('jquery'), time(), true);
 	}
@@ -234,7 +245,7 @@ class Cranleigh_SmugMug_API {
 		?>
 		<script>
 			function SmugmugInsertShortcode(){
-				
+
 				var smugmug_url = jQuery("#smugmug_url").val();
 				smugmug_url = smugmug_url.trim();
 				if (smugmug_url.substr(0,4) != "http") {
@@ -243,7 +254,7 @@ class Cranleigh_SmugMug_API {
 				}
 				window.send_to_editor("[smugmug path=\"" + smugmug_url + "\"]");
 				return;
-        
+
     }
 		</script>
 
@@ -266,24 +277,25 @@ class Cranleigh_SmugMug_API {
 
 	<?php
 	}
-	
+
 	function google_event_tracking() {
 		?>
 		<script type="text/javascript">
 			jQuery(document).ready(function() {
-	
+
 				jQuery('.cs_smugmug_container a.tracked').click(function() {
 					var action 		= jQuery(this).data("action");
 					var category 	= jQuery(this).data("category");
 					var label 		= jQuery(this).data("label");
 					ga('send', 'event',  action, category, label);
 				});
-	
+
 			});
 		</script>
 
 		<?php
-	}	
-	
+	}
+
 }
 $smugapi = new Cranleigh_SmugMug_API();
+
