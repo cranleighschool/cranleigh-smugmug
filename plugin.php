@@ -238,7 +238,7 @@ class Cranleigh_SmugMug_API {
 	}
 
 	function include_media_button_js_file() {
-		wp_enqueue_script('media_button', plugins_url('popme.js', __FILE__), array('jquery'), time(), true);
+		wp_enqueue_script('smugmug_media_button', plugins_url('popme.js', __FILE__), array('jquery'), time(), true);
 	}
 
 	function add_mce_popup() {
