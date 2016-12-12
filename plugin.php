@@ -32,8 +32,8 @@ class Cranleigh_SmugMug_API {
 			)
 		);
 
-		$this->api_key = $wordpress_settings['api_key'];
-		$this->username = $wordpress_settings['username'];
+		$this->api_key = (isset($wordpress_settings['api_key']) ? $wordpress_settings['api_key'] : false);
+		$this->username = (isset($wordpress_settings['username']) ? $wordpress_settings['username'] : false);
 		if (empty($this->api_key) || empty($this->username)) {
 			add_action( 'admin_notices', array($this, 'geterror') );
 		} else {
