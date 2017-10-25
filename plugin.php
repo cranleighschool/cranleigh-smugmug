@@ -4,7 +4,7 @@ Plugin Name: Cranleigh Smug Mug Integration
 Plugin URI: http://www.cranleigh.org
 Description: This plugin uses a php Smugmug class wrapper written by github.com/lildude.
 Author: Fred Bradley
-Version: 2.1
+Version: 2.0
 Author URI: http://fred.im/
 */
 
@@ -32,31 +32,120 @@ class Cranleigh_SmugMug_API {
 			)
 		);
 
-		$this->api_key = (isset($wordpress_settings['api_key']) ? $wordpress_settings['api_key'] : false);
-		$this->username = (isset($wordpress_settings['username']) ? $wordpress_settings['username'] : false);
-		if (empty($this->api_key) || empty($this->username)) {
-			add_action( 'admin_notices', array($this, 'geterror') );
-		} else {
-			add_shortcode("smugmug_photos", array($this, 'shortcode'));
-			add_shortcode("smugmug", array($this, 'shortcode'));
-			add_action('wp_enqueue_scripts',array($this,'enqueue_styles'));
-			add_action('media_buttons', array($this, 'add_media_button'), 900);
-			add_action('wp_enqueue_media', array($this, 'include_media_button_js_file'));
-			add_action( 'admin_print_footer_scripts', array( $this, 'add_mce_popup' ) );
-		}
+		$this->api_key = $wordpress_settings['api_key'];
+		$this->username = $wordpress_settings['username'];
+
+		add_shortcode("smugmug_photos", array($this, 'shortcode'));
+		add_shortcode("smugmug", array($this, 'shortcode'));
+		add_shortcode("smugmug_latest", array($this, 'latest_galleries'));
+		add_action('wp_enqueue_scripts',array($this,'enqueue_styles'));
+		add_action('media_buttons', array($this, 'add_media_button'), 900);
+		add_action('wp_enqueue_media', array($this, 'include_media_button_js_file'));
+		add_action( 'admin_print_footer_scripts', array( $this, 'add_mce_popup' ) );
 
 	}
-
-	function geterror() {
-		$class = 'notice notice-error';
-		$message = __( 'You need to configure the <a href="options-general.php?page=smugmug-config">Smugmug Plugin settings</a>.', 'sample-text-domain' );
-
-		printf( '<div class="%1$s"><p>%2$s</p></div>', $class, $message );
-	}
-
 
 	function enqueue_styles() {
-		wp_register_style('font-awesome', plugins_url('font-awesome-4.6.3/css/font-awesome.min.css', __FILE__));
+//		wp_register_style('font-awesome', plugins_url('font-awesome-4.6.3/css/font-awesome.min.css', __FILE__));
+	}
+
+	private function showAlbumHighlightImage(string $thumb, string $name, string $uri, $lastUpdated) {
+		ob_start();
+
+		?>
+		<div class="card landscape">
+			<div class="row">
+				<div class="col-xs-4">
+					<div class="card-image">
+						<a href="<?php echo $uri; ?>" target="_blank"><img src="<?php echo $thumb; ?>" alt="<?php echo $name; ?>" title="<?php echo $name; ?>" /></a>
+					</div>
+				</div>
+				<div class="col-xs-8">
+					<div class="card-text">
+						<p>
+							<a href="<?php echo $uri; ?>" target="_blank"><?php echo $name; ?></a>
+						</p>
+						<p><small>Updated: <strong><?php echo date("D j M Y", strtotime($lastUpdated)); ?></strong></small></p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<?php
+		$return = ob_get_contents();
+		ob_end_clean();
+
+		return $return;
+	}
+
+	private function cleanAlbumObj($album) {
+		$keep = [
+			"Name","Title","AlbumKey","Description","WebUri","NodeID","ImagesLastUpdated"
+		];
+		foreach (array_keys((array) $album) as $key):
+			if (!in_array($key, $keep)) {
+				unset($album->$key);
+			}
+		endforeach;
+		return $album;
+	}
+
+	private function getCleanHighlightNode($nodeID) {
+		$obj = $this->smug->get("highlight/node/".$nodeID);
+
+		$keep = [
+			"Image"
+		];
+		foreach(array_keys((array) $obj) as $key):
+			if (!in_array($key, $keep)) {
+				unset($obj->$key);
+			}
+		endforeach;
+		return $obj;
+	}
+	public function latest_galleries($atts, $content=null) {
+		require_once(dirname(__FILE__).'/phpSmug/vendor/autoload.php');
+		$this->smug = new phpSmug\Client($this->api_key, $this->options);
+		try {
+			if (!get_transient( 'sm_latest_albums' )):
+				$albums = [];
+				$api = $this->smug->get("user/{$this->username}!albums?count=12&Order=Date Added (Descending)");
+				foreach ($api->Album as $album):
+					$album = $this->cleanAlbumObj($album);
+					$album->ObjHighlightImage = $this->getCleanHighlightNode($album->NodeID);
+
+					array_push($albums, $album);
+				endforeach;
+				set_transient( 'sm_latest_albums', $albums, HOUR_IN_SECONDS );
+			else:
+				$albums = get_transient( 'sm_latest_albums' );
+			endif;
+
+			$output = "<div class=\"row smugmug-grid\">";
+
+			foreach ($albums as $key => $album):
+				$image = $album->ObjHighlightImage;
+				$thumb = $image->Image->ThumbnailUrl;
+				$name = $album->Name;
+				$title = $album->Title;
+				$uri = $album->WebUri;
+				$lastUpdated = $album->ImagesLastUpdated;
+
+				if ($key % 2 == 0) {
+					$output.= "</div><div class=\"row\">";
+				}
+				$output .= "<div class=\"col-lg-6 col-sm-12 thumb-photo\">";
+				$output .= $this->showAlbumHighlightImage($thumb, $name, $uri, $lastUpdated);
+				$output .= "</div>";
+
+			endforeach;
+
+			$output .= "</div>";
+			return $output;
+		} catch (Exception $e) {
+			echo "<div class=\"alert alert-warning\">".$e->getMessage()."</div>";
+			return false;
+		}
 	}
 
 	/**
@@ -68,8 +157,8 @@ class Cranleigh_SmugMug_API {
 	 * @return void
 	 */
 	function shortcode($atts, $content=null) {
-		wp_enqueue_style('font-awesome');
-		wp_enqueue_style('dashicons');
+		//wp_enqueue_style('font-awesome');
+		//wp_enqueue_style('dashicons');
 		add_action('wp_footer', array($this, 'google_event_tracking'));
 
 
@@ -79,7 +168,7 @@ class Cranleigh_SmugMug_API {
 
 		$a = shortcode_atts(array(
 			"path" => null
-		), $atts);
+		), $atts, 'smugmug');
 
 		return $this->get_highlight_image($a['path']);
 	}
@@ -97,6 +186,7 @@ class Cranleigh_SmugMug_API {
 		return (substr($p,-1)!='/') ? $p.='/' : $p;
 	}
 
+
 	/**
 	 * get_highlight_image function.
 	 *
@@ -105,11 +195,15 @@ class Cranleigh_SmugMug_API {
 	 * @return void
 	 */
 	function get_highlight_image($path="/2015-2016/Sport/Athletics/Atheletics-Bracknell-April-30") {
-		if (strpos($path, "cranleigh.smugmug.com")) {
-			$ex = explode("cranleigh.smugmug.com", $path);
-			$path = rtrim($ex[1], '/');
+		$url = parse_url($path);
+		if (!in_array($url['host'], ['cranleigh.smugmug.com', 'cranprep.smugmug.com', 'smugmug.cranleigh.org', 'smugmug.cranprep.org'])) {
+			error_log("Trying to use plugin to link to Non Cranleigh Smugmug account. This is not allowed.");
+			return false;
 		}
+
+		$path = trim($url['path'], '/');
 		$path = '/'.ltrim($path, '/');
+
 		try {
 			$api = $this->smug->get("user/{$this->username}!urlpathlookup?urlpath=".$path);
 		} catch (Exception $e) {
@@ -178,7 +272,7 @@ class Cranleigh_SmugMug_API {
 		endif;
 		$output .= '<p>View, download or purchase the best photos on our Smugmug.</p>';
 		$output .= '<a data-action="Smugmug" data-category="'.$post->post_name.'" data-label="'.$widget_title.'" target="_blank" href="'.$image_obj->uri.'" class="cs_smugmug_button tracked">Visit Site <i class="fa fa-fw fa-external-link"></i></a>';
-		$output .= '</div>';
+		$output .= '<div class="clear clearfix"></div></div>';
 
 		return $output;
 	}
@@ -238,12 +332,13 @@ class Cranleigh_SmugMug_API {
 	}
 
 	function include_media_button_js_file() {
-		wp_enqueue_script('smugmug_media_button', plugins_url('popme.js', __FILE__), array('jquery'), time(), true);
+		wp_enqueue_script('media_button', plugins_url('popme.js', __FILE__), array('jquery'), time(), true);
 	}
 
 	function add_mce_popup() {
 		?>
 		<script>
+
 			function SmugmugInsertShortcode(){
 
 				var smugmug_url = jQuery("#smugmug_url").val();
@@ -281,7 +376,9 @@ class Cranleigh_SmugMug_API {
 	function google_event_tracking() {
 		?>
 		<script type="text/javascript">
+
 			jQuery(document).ready(function() {
+
 
 				jQuery('.cs_smugmug_container a.tracked').click(function() {
 					var action 		= jQuery(this).data("action");
