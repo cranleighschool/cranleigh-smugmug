@@ -104,7 +104,7 @@ class Cranleigh_SmugMug_API {
 		return $obj;
 	}
 	public function latest_galleries($atts, $content=null) {
-		require_once(dirname(__FILE__).'/phpSmug/vendor/autoload.php');
+		require_once(dirname(__FILE__).'/vendor/autoload.php');
 		$this->smug = new phpSmug\Client($this->api_key, $this->options);
 		try {
 			if (!get_transient( 'sm_latest_albums' )):
