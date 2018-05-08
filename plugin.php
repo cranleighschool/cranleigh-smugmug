@@ -162,7 +162,7 @@ class Cranleigh_SmugMug_API {
 		add_action('wp_footer', array($this, 'google_event_tracking'));
 
 
-		require_once(dirname(__FILE__).'/phpSmug/vendor/autoload.php');
+		require_once(dirname(__FILE__).'/vendor/autoload.php');
 
 		$this->smug = new phpSmug\Client($this->api_key, $this->options);
 
