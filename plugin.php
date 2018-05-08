@@ -4,7 +4,7 @@ Plugin Name: Cranleigh Smug Mug Integration
 Plugin URI: http://www.cranleigh.org
 Description: This plugin uses a php Smugmug class wrapper written by github.com/lildude.
 Author: Fred Bradley
-Version: 2.1
+Version: 2.2
 Author URI: http://fred.im/
 */
 
